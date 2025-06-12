@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Paperclip, Mic, Square, Settings, MoreVertical } from 'lucide-react';
+import { Send, Paperclip, Mic, Square, Settings, MoreVertical, Sparkles } from 'lucide-react';
 import { Message } from '../types';
 import MessageBubble from './MessageBubble';
 import TypingIndicator from './TypingIndicator';
@@ -74,20 +74,41 @@ export default function ChatInterface({
     adjustTextareaHeight();
   }, [input]);
 
+  const suggestedPrompts = [
+    "Jelaskan konsep machine learning dengan sederhana",
+    "Buatkan rencana belajar programming untuk pemula",
+    "Analisis tren teknologi terbaru tahun 2024",
+    "Tips produktivitas untuk remote work"
+  ];
+
   return (
     <div className="flex flex-col h-full bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
       {/* Chat Header */}
-      <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
+      <div className="flex items-center justify-between p-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 shadow-sm">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-            <span className="text-white font-bold text-lg">AI</span>
+          <div className="relative">
+            <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+              <Sparkles className="w-5 h-5 text-white" />
+            </div>
+            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white dark:border-gray-800"></div>
           </div>
           <div>
             <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
               AI Assistant
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              {isLoading ? 'Sedang mengetik...' : 'Online'}
+              {isLoading ? (
+                <span className="flex items-center space-x-1">
+                  <motion.div
+                    className="w-2 h-2 bg-blue-500 rounded-full"
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ duration: 1, repeat: Infinity }}
+                  />
+                  <span>Sedang mengetik...</span>
+                </span>
+              ) : (
+                'Online • Powered by Gemini 2.0'
+              )}
             </p>
           </div>
         </div>
@@ -108,6 +129,37 @@ export default function ChatInterface({
 
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {messages.length === 0 && (
+          <div className="flex flex-col items-center justify-center h-full text-center">
+            <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mb-6">
+              <Sparkles className="w-10 h-10 text-white" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+              Selamat datang di AI Chat Platform
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md">
+              Mulai percakapan dengan AI assistant yang canggih. Tanyakan apa saja yang ingin Anda ketahui!
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-2xl">
+              {suggestedPrompts.map((prompt, index) => (
+                <motion.button
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  onClick={() => setInput(prompt)}
+                  className="p-4 text-left bg-white dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 hover:shadow-md transition-all duration-200 group"
+                >
+                  <p className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                    {prompt}
+                  </p>
+                </motion.button>
+              ))}
+            </div>
+          </div>
+        )}
+
         <AnimatePresence>
           {messages.map((message) => (
             <MessageBubble
@@ -121,7 +173,7 @@ export default function ChatInterface({
           ))}
         </AnimatePresence>
         
-        {isLoading && <TypingIndicator />}
+        {isLoading && messages.some(m => m.isTyping) && <TypingIndicator />}
         <div ref={messagesEndRef} />
       </div>
 
@@ -157,7 +209,7 @@ export default function ChatInterface({
       </AnimatePresence>
 
       {/* Input Area */}
-      <div className="p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+      <div className="p-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-t border-gray-200 dark:border-gray-700">
         <form onSubmit={handleSubmit} className="flex items-end space-x-3">
           <div className="flex-1 relative">
             <textarea
@@ -197,7 +249,7 @@ export default function ChatInterface({
             <button
               type="button"
               onClick={onStopGeneration}
-              className="flex items-center justify-center w-12 h-12 bg-red-500 hover:bg-red-600 text-white rounded-xl transition-colors duration-200"
+              className="flex items-center justify-center w-12 h-12 bg-red-500 hover:bg-red-600 text-white rounded-xl transition-colors duration-200 shadow-lg"
             >
               <Square className="w-5 h-5" />
             </button>
@@ -205,7 +257,7 @@ export default function ChatInterface({
             <button
               type="submit"
               disabled={!input.trim() && attachments.length === 0}
-              className="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-xl transition-all duration-200 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95"
+              className="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-xl transition-all duration-200 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95 shadow-lg"
             >
               <Send className="w-5 h-5" />
             </button>

@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Message, ChatSession, ChatSettings } from '../types';
+import { aiService } from '../services/aiService';
 
 export function useChat(initialSettings: ChatSettings) {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -23,60 +24,66 @@ export function useChat(initialSettings: ChatSettings) {
     setMessages(prev => [...prev, userMessage]);
     setIsLoading(true);
 
-    // Create typing indicator
-    const typingMessage: Message = {
-      id: uuidv4(),
+    // Create assistant message for streaming
+    const assistantMessageId = uuidv4();
+    const assistantMessage: Message = {
+      id: assistantMessageId,
       content: '',
       role: 'assistant',
       timestamp: new Date(),
       isTyping: true
     };
 
-    setMessages(prev => [...prev, typingMessage]);
+    setMessages(prev => [...prev, assistantMessage]);
 
     try {
       abortControllerRef.current = new AbortController();
       
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      // Use streaming response
+      let fullContent = '';
+      const result = await aiService.generateStreamResponse(
+        [...messages, userMessage],
+        settings,
+        (chunk: string) => {
+          fullContent += chunk;
+          setMessages(prev => prev.map(msg => 
+            msg.id === assistantMessageId 
+              ? { ...msg, content: fullContent, isTyping: true }
+              : msg
+          ));
         },
-        body: JSON.stringify({
-          messages: [...messages, userMessage],
-          settings,
-        }),
-        signal: abortControllerRef.current.signal,
-      });
+        abortControllerRef.current.signal
+      );
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      // Finalize the message
+      setMessages(prev => prev.map(msg => 
+        msg.id === assistantMessageId 
+          ? { 
+              ...msg, 
+              content: fullContent,
+              isTyping: false,
+              tokens: result.tokens,
+              model: result.model
+            }
+          : msg
+      ));
 
-      const data = await response.json();
-      
-      const assistantMessage: Message = {
-        id: uuidv4(),
-        content: data.content,
-        role: 'assistant',
-        timestamp: new Date(),
-        tokens: data.tokens,
-        model: data.model
-      };
-
-      setMessages(prev => prev.slice(0, -1).concat(assistantMessage));
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
         console.log('Request was aborted');
+        setMessages(prev => prev.filter(msg => msg.id !== assistantMessageId));
       } else {
         console.error('Error sending message:', error);
         const errorMessage: Message = {
-          id: uuidv4(),
-          content: 'Maaf, terjadi kesalahan saat memproses pesan Anda. Silakan coba lagi.',
+          id: assistantMessageId,
+          content: `Maaf, terjadi kesalahan: ${error instanceof Error ? error.message : 'Unknown error'}. Silakan coba lagi.`,
           role: 'assistant',
-          timestamp: new Date()
+          timestamp: new Date(),
+          isTyping: false
         };
-        setMessages(prev => prev.slice(0, -1).concat(errorMessage));
+        setMessages(prev => prev.map(msg => 
+          msg.id === assistantMessageId ? errorMessage : msg
+        ));
       }
     } finally {
       setIsLoading(false);
@@ -88,7 +95,9 @@ export function useChat(initialSettings: ChatSettings) {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       setIsLoading(false);
-      setMessages(prev => prev.filter(msg => !msg.isTyping));
+      setMessages(prev => prev.map(msg => 
+        msg.isTyping ? { ...msg, isTyping: false } : msg
+      ));
     }
   }, []);
 

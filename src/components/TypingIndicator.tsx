@@ -12,22 +12,22 @@ export default function TypingIndicator() {
         <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
           <span className="text-white font-bold text-sm">AI</span>
         </div>
-        <div className="bg-white dark:bg-gray-700 rounded-2xl px-4 py-3 border border-gray-200 dark:border-gray-600">
+        <div className="bg-white dark:bg-gray-700 rounded-2xl px-4 py-3 border border-gray-200 dark:border-gray-600 shadow-sm">
           <div className="flex space-x-1">
             <motion.div
-              className="w-2 h-2 bg-gray-400 rounded-full"
-              animate={{ scale: [1, 1.2, 1] }}
-              transition={{ duration: 1, repeat: Infinity, delay: 0 }}
+              className="w-2 h-2 bg-blue-500 rounded-full"
+              animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+              transition={{ duration: 1.5, repeat: Infinity, delay: 0 }}
             />
             <motion.div
-              className="w-2 h-2 bg-gray-400 rounded-full"
-              animate={{ scale: [1, 1.2, 1] }}
-              transition={{ duration: 1, repeat: Infinity, delay: 0.2 }}
+              className="w-2 h-2 bg-blue-500 rounded-full"
+              animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+              transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}
             />
             <motion.div
-              className="w-2 h-2 bg-gray-400 rounded-full"
-              animate={{ scale: [1, 1.2, 1] }}
-              transition={{ duration: 1, repeat: Infinity, delay: 0.4 }}
+              className="w-2 h-2 bg-blue-500 rounded-full"
+              animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+              transition={{ duration: 1.5, repeat: Infinity, delay: 0.4 }}
             />
           </div>
         </div>
