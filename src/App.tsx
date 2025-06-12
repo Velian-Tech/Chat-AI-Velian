@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
-import { Menu, X, Settings as SettingsIcon, BookOpen, Zap } from 'lucide-react';
+import { Menu, X, Settings as SettingsIcon, BookOpen, Sparkles } from 'lucide-react';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { useChat } from './hooks/useChat';
 import ChatInterface from './components/ChatInterface';
@@ -26,13 +26,13 @@ const parseChatSessionDates = (sessions: any[]): ChatSession[] => {
 
 function App() {
   const [sessions, setSessions] = useLocalStorage<ChatSession[]>(
-    'chat-sessions', 
+    'velian-chat-sessions', 
     sampleSessions,
     parseChatSessionDates
   );
-  const [currentSessionId, setCurrentSessionId] = useLocalStorage<string | null>('current-session', null);
-  const [settings, setSettings] = useLocalStorage('chat-settings', defaultSettings);
-  const [templates] = useLocalStorage<Template[]>('chat-templates', sampleTemplates);
+  const [currentSessionId, setCurrentSessionId] = useLocalStorage<string | null>('velian-current-session', null);
+  const [settings, setSettings] = useLocalStorage('velian-chat-settings', defaultSettings);
+  const [templates] = useLocalStorage<Template[]>('velian-chat-templates', sampleTemplates);
   
   const [showSidebar, setShowSidebar] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
@@ -71,7 +71,7 @@ function App() {
   const createNewSession = () => {
     const newSession: ChatSession = {
       id: uuidv4(),
-      title: 'Chat Baru',
+      title: 'Chat Baru dengan Velian AI',
       messages: [],
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -111,14 +111,15 @@ function App() {
       const data = {
         session,
         exportDate: new Date().toISOString(),
-        version: '1.0'
+        version: '2.0',
+        platform: 'Velian AI'
       };
       
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `chat-${session.title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${new Date().toISOString().split('T')[0]}.json`;
+      a.download = `velian-chat-${session.title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${new Date().toISOString().split('T')[0]}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -159,7 +160,7 @@ function App() {
       // Show variable input form (simplified for demo)
       const values: Record<string, string> = {};
       template.variables.forEach(variable => {
-        const value = prompt(`Enter ${variable.label}:`) || '';
+        const value = window.prompt(`Enter ${variable.label}:`) || '';
         values[variable.name] = value;
         prompt = prompt.replace(new RegExp(`{{${variable.name}}}`, 'g'), value);
       });
@@ -178,7 +179,7 @@ function App() {
   }, [sessions.length, currentSessionId]);
 
   return (
-    <div className="h-screen bg-gray-100 dark:bg-gray-900 flex overflow-hidden">
+    <div className="h-screen bg-gradient-to-br from-gray-100 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex overflow-hidden">
       {/* Sidebar */}
       <AnimatePresence>
         {showSidebar && (
@@ -199,7 +200,7 @@ function App() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Top Bar */}
-        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between">
+        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between shadow-sm">
           <div className="flex items-center space-x-3">
             <button
               onClick={() => setShowSidebar(!showSidebar)}
@@ -208,16 +209,16 @@ function App() {
               {showSidebar ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
             
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <Zap className="w-5 h-5 text-white" />
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+                <Sparkles className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  AI Chat Platform
+                <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  Velian AI Platform
                 </h1>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Powered by {settings.model}
+                  Powered by {settings.model.replace('velian-ai-', 'Velian AI ')} • Cerdas & Aman
                 </p>
               </div>
             </div>

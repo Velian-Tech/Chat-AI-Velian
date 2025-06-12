@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Copy, Edit, Trash2, Bookmark, MoreHorizontal, ThumbsUp, ThumbsDown, Heart, Smile } from 'lucide-react';
+import { Copy, Edit, Trash2, Bookmark, MoreHorizontal, ThumbsUp, ThumbsDown, Heart, Smile, Sparkles, Shield } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -29,7 +29,8 @@ export default function MessageBubble({
   const [showReactions, setShowReactions] = useState(false);
 
   const isUser = message.role === 'user';
-  const reactions = ['👍', '👎', '❤️', '😊', '🤔', '🎉'];
+  const isVelianAI = message.role === 'assistant';
+  const reactions = ['👍', '👎', '❤️', '😊', '🤔', '🎉', '🔥', '💡'];
 
   const handleCopy = async () => {
     try {
@@ -62,53 +63,62 @@ export default function MessageBubble({
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
     >
-      <div className={`max-w-[80%] ${isUser ? 'order-2' : 'order-1'}`}>
+      <div className={`max-w-[85%] ${isUser ? 'order-2' : 'order-1'}`}>
         {/* Avatar */}
         {!isUser && (
-          <div className="flex items-end space-x-2 mb-1">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-sm">AI</span>
+          <div className="flex items-end space-x-2 mb-2">
+            <div className="relative">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 rounded-full flex items-center justify-center shadow-lg">
+                <Sparkles className="w-4 h-4 text-white" />
+              </div>
+              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border border-white"></div>
             </div>
-            <span className="text-xs text-gray-500 dark:text-gray-400">
-              {format(message.timestamp, 'HH:mm', { locale: id })}
-            </span>
+            <div className="flex items-center space-x-2">
+              <span className="text-sm font-medium bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Velian AI
+              </span>
+              <Shield className="w-3 h-3 text-green-500" title="AI Aman & Terpercaya" />
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                {format(message.timestamp, 'HH:mm', { locale: id })}
+              </span>
+            </div>
           </div>
         )}
 
         {/* Message Content */}
         <div
-          className={`relative rounded-2xl px-4 py-3 shadow-sm ${
+          className={`relative rounded-2xl px-4 py-3 shadow-lg ${
             isUser
-              ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white'
-              : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-600'
-          }`}
+              ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white ml-8'
+              : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-600 mr-8'
+          } ${message.isTyping ? 'animate-pulse' : ''}`}
         >
           {/* Bookmark indicator */}
           {message.isBookmarked && (
             <div className="absolute -top-2 -right-2">
-              <Bookmark className="w-4 h-4 text-yellow-500 fill-current" />
+              <Bookmark className="w-4 h-4 text-yellow-500 fill-current drop-shadow-sm" />
             </div>
           )}
 
           {/* Edit indicator */}
           {message.isEdited && (
-            <div className="text-xs opacity-70 mb-1">
-              (diedit)
+            <div className="text-xs opacity-70 mb-1 flex items-center space-x-1">
+              <span>(diedit)</span>
             </div>
           )}
 
           {isEditing ? (
-            <div className="space-y-2">
+            <div className="space-y-3">
               <textarea
                 value={editContent}
                 onChange={(e) => setEditContent(e.target.value)}
-                className="w-full bg-transparent border border-gray-300 dark:border-gray-600 rounded-lg p-2 text-sm resize-none"
-                rows={3}
+                className="w-full bg-transparent border border-gray-300 dark:border-gray-600 rounded-lg p-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                rows={4}
               />
               <div className="flex space-x-2">
                 <button
                   onClick={handleEdit}
-                  className="px-3 py-1 bg-green-500 text-white rounded-lg text-xs hover:bg-green-600"
+                  className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm transition-colors"
                 >
                   Simpan
                 </button>
@@ -117,14 +127,14 @@ export default function MessageBubble({
                     setIsEditing(false);
                     setEditContent(message.content);
                   }}
-                  className="px-3 py-1 bg-gray-500 text-white rounded-lg text-xs hover:bg-gray-600"
+                  className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg text-sm transition-colors"
                 >
                   Batal
                 </button>
               </div>
             </div>
           ) : (
-            <div className="prose prose-sm max-w-none dark:prose-invert">
+            <div className={`prose prose-sm max-w-none ${isUser ? 'prose-invert' : 'dark:prose-invert'}`}>
               <ReactMarkdown
                 components={{
                   code({ node, inline, className, children, ...props }) {
@@ -134,17 +144,48 @@ export default function MessageBubble({
                         style={oneDark}
                         language={match[1]}
                         PreTag="div"
-                        className="rounded-lg"
+                        className="rounded-lg !mt-2 !mb-2"
                         {...props}
                       >
                         {String(children).replace(/\n$/, '')}
                       </SyntaxHighlighter>
                     ) : (
-                      <code className={className} {...props}>
+                      <code 
+                        className={`${className} ${
+                          isUser 
+                            ? 'bg-white/20 text-white px-1 py-0.5 rounded' 
+                            : 'bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded'
+                        }`} 
+                        {...props}
+                      >
                         {children}
                       </code>
                     );
                   },
+                  h1: ({ children }) => (
+                    <h1 className="text-xl font-bold mb-3 mt-4 first:mt-0">{children}</h1>
+                  ),
+                  h2: ({ children }) => (
+                    <h2 className="text-lg font-bold mb-2 mt-3 first:mt-0">{children}</h2>
+                  ),
+                  h3: ({ children }) => (
+                    <h3 className="text-base font-bold mb-2 mt-3 first:mt-0">{children}</h3>
+                  ),
+                  ul: ({ children }) => (
+                    <ul className="list-disc list-inside space-y-1 my-2">{children}</ul>
+                  ),
+                  ol: ({ children }) => (
+                    <ol className="list-decimal list-inside space-y-1 my-2">{children}</ol>
+                  ),
+                  blockquote: ({ children }) => (
+                    <blockquote className={`border-l-4 pl-4 my-2 italic ${
+                      isUser 
+                        ? 'border-white/30' 
+                        : 'border-gray-300 dark:border-gray-600'
+                    }`}>
+                      {children}
+                    </blockquote>
+                  ),
                 }}
               >
                 {message.content}
@@ -153,16 +194,16 @@ export default function MessageBubble({
           )}
 
           {/* Message metadata */}
-          {!isUser && (
-            <div className="flex items-center justify-between mt-2 text-xs opacity-70">
+          {!isUser && !isEditing && (
+            <div className="flex items-center justify-between mt-3 text-xs opacity-70">
               <div className="flex items-center space-x-2">
                 {message.model && (
-                  <span className="bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded">
-                    {message.model}
+                  <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-full">
+                    {message.model.replace('velian-ai-', 'Velian ')}
                   </span>
                 )}
                 {message.tokens && (
-                  <span className="bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded">
+                  <span className="bg-gray-100 dark:bg-gray-600 px-2 py-1 rounded-full">
                     {message.tokens} tokens
                   </span>
                 )}
@@ -172,12 +213,12 @@ export default function MessageBubble({
 
           {/* Reactions */}
           {message.reactions && message.reactions.length > 0 && (
-            <div className="flex flex-wrap gap-1 mt-2">
+            <div className="flex flex-wrap gap-1 mt-3">
               {message.reactions.map((reaction, index) => (
                 <button
                   key={index}
                   onClick={() => handleReaction(reaction.emoji)}
-                  className="flex items-center space-x-1 bg-gray-100 dark:bg-gray-600 rounded-full px-2 py-1 text-xs hover:bg-gray-200 dark:hover:bg-gray-500"
+                  className="flex items-center space-x-1 bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 rounded-full px-2 py-1 text-xs transition-colors"
                 >
                   <span>{reaction.emoji}</span>
                   <span>{reaction.count}</span>
@@ -189,7 +230,7 @@ export default function MessageBubble({
 
         {/* User timestamp */}
         {isUser && (
-          <div className="text-right mt-1">
+          <div className="text-right mt-1 mr-2">
             <span className="text-xs text-gray-500 dark:text-gray-400">
               {format(message.timestamp, 'HH:mm', { locale: id })}
             </span>
@@ -249,13 +290,13 @@ export default function MessageBubble({
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="absolute bottom-full mb-1 left-0 bg-white dark:bg-gray-700 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 p-2 flex space-x-1 z-10"
+                className="absolute bottom-full mb-1 left-0 bg-white dark:bg-gray-700 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 p-2 flex flex-wrap gap-1 z-10 min-w-max"
               >
                 {reactions.map((emoji) => (
                   <button
                     key={emoji}
                     onClick={() => handleReaction(emoji)}
-                    className="p-1 hover:bg-gray-100 dark:hover:bg-gray-600 rounded text-lg"
+                    className="p-1 hover:bg-gray-100 dark:hover:bg-gray-600 rounded text-lg transition-colors"
                   >
                     {emoji}
                   </button>

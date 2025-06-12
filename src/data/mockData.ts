@@ -2,10 +2,23 @@ import { v4 as uuidv4 } from 'uuid';
 import { ChatSession, Template, AIModel, ChatSettings } from '../types';
 
 export const defaultSettings: ChatSettings = {
-  model: 'gemini-2.0-flash',
+  model: 'velian-ai-pro',
   temperature: 0.7,
   maxTokens: 2048,
-  systemPrompt: 'Anda adalah asisten AI yang membantu dan informatif. Jawab pertanyaan dengan jelas dan akurat.',
+  systemPrompt: `Anda adalah Velian AI, asisten AI yang sangat cerdas dan membantu. Anda memiliki kemampuan:
+
+1. **Analisis Mendalam**: Mampu menganalisis masalah kompleks dengan detail
+2. **Kreativitas Tinggi**: Dapat menghasilkan ide-ide inovatif dan solusi kreatif
+3. **Pembelajaran Adaptif**: Belajar dari konteks percakapan untuk memberikan respons yang lebih personal
+4. **Multi-Domain Expertise**: Ahli dalam berbagai bidang seperti teknologi, bisnis, pendidikan, dan sains
+
+**BATASAN KETAT:**
+- TIDAK akan membahas konten pornografi, kekerasan, atau hal-hal yang merugikan
+- TIDAK akan memberikan informasi untuk aktivitas ilegal atau berbahaya
+- TIDAK akan menyebarkan informasi palsu atau menyesatkan
+- TIDAK akan melanggar privasi atau etika
+
+Selalu berikan respons yang konstruktif, edukatif, dan bermanfaat. Jika diminta hal yang tidak pantas, jelaskan dengan sopan mengapa tidak bisa membantu dan tawarkan alternatif yang positif.`,
   autoSave: true,
   darkMode: false,
   fontSize: 'medium',
@@ -16,33 +29,33 @@ export const defaultSettings: ChatSettings = {
 
 export const availableModels: AIModel[] = [
   {
-    id: 'gemini-2.0-flash',
-    name: 'Gemini 2.0 Flash',
-    description: 'Model terbaru Google dengan kemampuan multimodal',
-    provider: 'Google',
+    id: 'velian-ai-pro',
+    name: 'Velian AI Pro',
+    description: 'Model AI terdepan dengan kemampuan reasoning dan analisis tingkat tinggi',
+    provider: 'Velian Tech',
     maxTokens: 8192,
-    costPer1kTokens: 0.002,
-    capabilities: ['text', 'image', 'code', 'reasoning'],
+    costPer1kTokens: 0.001,
+    capabilities: ['text', 'image', 'code', 'reasoning', 'analysis', 'creative', 'multilingual'],
     isAvailable: true
   },
   {
-    id: 'gpt-4-turbo',
-    name: 'GPT-4 Turbo',
-    description: 'Model OpenAI dengan kemampuan reasoning tinggi',
-    provider: 'OpenAI',
+    id: 'velian-ai-creative',
+    name: 'Velian AI Creative',
+    description: 'Spesialis untuk tugas-tugas kreatif dan penulisan',
+    provider: 'Velian Tech',
     maxTokens: 4096,
-    costPer1kTokens: 0.01,
-    capabilities: ['text', 'code', 'reasoning', 'analysis'],
+    costPer1kTokens: 0.0008,
+    capabilities: ['text', 'creative', 'writing', 'storytelling'],
     isAvailable: true
   },
   {
-    id: 'claude-3-sonnet',
-    name: 'Claude 3 Sonnet',
-    description: 'Model Anthropic yang aman dan helpful',
-    provider: 'Anthropic',
-    maxTokens: 4096,
-    costPer1kTokens: 0.003,
-    capabilities: ['text', 'code', 'analysis', 'creative'],
+    id: 'velian-ai-code',
+    name: 'Velian AI Code',
+    description: 'Ahli programming dan pengembangan software',
+    provider: 'Velian Tech',
+    maxTokens: 6144,
+    costPer1kTokens: 0.0012,
+    capabilities: ['code', 'debugging', 'architecture', 'optimization'],
     isAvailable: true
   }
 ];
@@ -50,191 +63,310 @@ export const availableModels: AIModel[] = [
 export const sampleTemplates: Template[] = [
   {
     id: uuidv4(),
-    title: 'Email Profesional',
-    description: 'Template untuk menulis email bisnis yang profesional',
+    title: 'Analisis Bisnis Mendalam',
+    description: 'Template untuk analisis bisnis komprehensif dengan insight strategis',
     category: 'business',
-    prompt: `Tulis email profesional dengan detail berikut:
+    prompt: `Sebagai Velian AI, lakukan analisis bisnis mendalam untuk:
 
-Kepada: {{recipient}}
-Subjek: {{subject}}
-Tujuan: {{purpose}}
-Tone: {{tone}}
+**Perusahaan/Produk:** {{subject}}
+**Industri:** {{industry}}
+**Target Market:** {{target_market}}
+**Periode Analisis:** {{period}}
 
-Pastikan email terstruktur dengan baik, sopan, dan jelas.`,
+**Analisis Komprehensif:**
+
+1. **Market Position & Competitive Landscape**
+   - Posisi pasar saat ini
+   - Analisis kompetitor utama
+   - Unique value proposition
+
+2. **Financial Health Assessment**
+   - Proyeksi revenue dan profitabilitas
+   - Cash flow analysis
+   - Investment requirements
+
+3. **SWOT Analysis Plus**
+   - Strengths (internal advantages)
+   - Weaknesses (areas for improvement)
+   - Opportunities (market potential)
+   - Threats (external risks)
+
+4. **Strategic Recommendations**
+   - Short-term action items (3-6 bulan)
+   - Medium-term goals (6-18 bulan)
+   - Long-term vision (2-5 tahun)
+
+5. **Risk Mitigation Strategies**
+   - Identifikasi risiko utama
+   - Contingency planning
+   - Monitoring metrics
+
+Berikan insight yang actionable dan data-driven dengan rekomendasi spesifik.`,
     variables: [
-      { name: 'recipient', type: 'text', label: 'Penerima', placeholder: 'Nama penerima', required: true },
-      { name: 'subject', type: 'text', label: 'Subjek', placeholder: 'Subjek email', required: true },
-      { name: 'purpose', type: 'textarea', label: 'Tujuan', placeholder: 'Jelaskan tujuan email', required: true },
-      { name: 'tone', type: 'select', label: 'Tone', options: ['Formal', 'Semi-formal', 'Friendly'], required: true }
+      { name: 'subject', type: 'text', label: 'Perusahaan/Produk', placeholder: 'Nama perusahaan atau produk', required: true },
+      { name: 'industry', type: 'text', label: 'Industri', placeholder: 'Sektor industri', required: true },
+      { name: 'target_market', type: 'text', label: 'Target Market', placeholder: 'Deskripsi target market', required: true },
+      { name: 'period', type: 'select', label: 'Periode Analisis', options: ['Q1 2024', 'Q2 2024', 'H1 2024', 'Full Year 2024'], required: true }
     ],
     isPublic: true,
-    createdBy: 'system',
-    usageCount: 245
+    createdBy: 'velian-system',
+    usageCount: 342
   },
   {
     id: uuidv4(),
-    title: 'Code Review',
-    description: 'Template untuk melakukan review kode secara sistematis',
+    title: 'Code Architecture Review',
+    description: 'Review arsitektur kode dengan standar enterprise dan best practices',
     category: 'coding',
-    prompt: `Lakukan code review untuk kode berikut:
+    prompt: `Sebagai Velian AI Code Expert, lakukan review arsitektur kode berikut:
+
+**Bahasa/Framework:** {{language}}
+**Tipe Aplikasi:** {{app_type}}
+**Scale:** {{scale}}
 
 \`\`\`{{language}}
 {{code}}
 \`\`\`
 
-Fokus pada:
-- Kualitas kode dan best practices
-- Performa dan optimisasi
-- Keamanan
-- Maintainability
-- Bug potensial
+**Comprehensive Code Review:**
 
-Berikan feedback konstruktif dengan saran perbaikan.`,
+1. **Architecture Assessment**
+   - Design patterns yang digunakan
+   - Separation of concerns
+   - Scalability considerations
+
+2. **Code Quality Analysis**
+   - Clean code principles
+   - SOLID principles compliance
+   - DRY, KISS, YAGNI implementation
+
+3. **Performance Optimization**
+   - Bottleneck identification
+   - Memory usage optimization
+   - Algorithm efficiency
+
+4. **Security Review**
+   - Vulnerability assessment
+   - Input validation
+   - Authentication/authorization
+
+5. **Maintainability Score**
+   - Code readability
+   - Documentation quality
+   - Test coverage
+
+6. **Refactoring Recommendations**
+   - Priority improvements
+   - Step-by-step refactoring plan
+   - Alternative approaches
+
+Berikan rating 1-10 untuk setiap aspek dan roadmap perbaikan yang detail.`,
     variables: [
-      { name: 'language', type: 'select', label: 'Bahasa Pemrograman', options: ['JavaScript', 'Python', 'Java', 'TypeScript', 'Go', 'Rust'], required: true },
+      { name: 'language', type: 'select', label: 'Bahasa/Framework', options: ['JavaScript/React', 'TypeScript/Node.js', 'Python/Django', 'Java/Spring', 'Go', 'Rust', 'C#/.NET'], required: true },
+      { name: 'app_type', type: 'select', label: 'Tipe Aplikasi', options: ['Web App', 'Mobile App', 'API/Backend', 'Desktop App', 'Microservice'], required: true },
+      { name: 'scale', type: 'select', label: 'Scale', options: ['Startup/MVP', 'Medium Scale', 'Enterprise', 'High Traffic'], required: true },
       { name: 'code', type: 'textarea', label: 'Kode', placeholder: 'Paste kode yang ingin direview', required: true }
     ],
     isPublic: true,
-    createdBy: 'system',
-    usageCount: 189
+    createdBy: 'velian-system',
+    usageCount: 289
   },
   {
     id: uuidv4(),
-    title: 'Analisis SWOT',
-    description: 'Template untuk melakukan analisis SWOT bisnis',
-    category: 'analysis',
-    prompt: `Lakukan analisis SWOT untuk:
-
-Perusahaan/Produk: {{subject}}
-Industri: {{industry}}
-Target Market: {{target_market}}
-
-Analisis:
-1. **Strengths (Kekuatan)**
-2. **Weaknesses (Kelemahan)**  
-3. **Opportunities (Peluang)**
-4. **Threats (Ancaman)**
-
-Berikan insight mendalam dan actionable recommendations.`,
-    variables: [
-      { name: 'subject', type: 'text', label: 'Subjek Analisis', placeholder: 'Nama perusahaan/produk', required: true },
-      { name: 'industry', type: 'text', label: 'Industri', placeholder: 'Sektor industri', required: true },
-      { name: 'target_market', type: 'text', label: 'Target Market', placeholder: 'Deskripsi target market', required: false }
-    ],
-    isPublic: true,
-    createdBy: 'system',
-    usageCount: 156
-  },
-  {
-    id: uuidv4(),
-    title: 'Creative Story',
-    description: 'Template untuk menulis cerita kreatif',
+    title: 'Creative Content Strategy',
+    description: 'Strategi konten kreatif untuk marketing dan branding',
     category: 'creative',
-    prompt: `Tulis cerita kreatif dengan elemen berikut:
+    prompt: `Sebagai Velian AI Creative Strategist, buat strategi konten kreatif untuk:
 
-Genre: {{genre}}
-Setting: {{setting}}
-Karakter Utama: {{main_character}}
-Konflik: {{conflict}}
-Panjang: {{length}}
+**Brand/Produk:** {{brand}}
+**Target Audience:** {{audience}}
+**Platform:** {{platform}}
+**Tujuan:** {{objective}}
+**Budget Range:** {{budget}}
+**Timeline:** {{timeline}}
 
-Buat cerita yang engaging dengan plot yang menarik, karakter yang berkembang, dan ending yang memuaskan.`,
+**Creative Content Strategy:**
+
+1. **Brand Voice & Personality**
+   - Tone of voice definition
+   - Brand personality traits
+   - Communication guidelines
+
+2. **Content Pillars (4-6 pillars)**
+   - Educational content
+   - Entertainment value
+   - Behind-the-scenes
+   - User-generated content
+   - Product showcases
+   - Industry insights
+
+3. **Content Calendar (30 hari)**
+   - Daily content themes
+   - Posting schedule optimization
+   - Seasonal/trending topics
+
+4. **Creative Formats**
+   - Visual content ideas
+   - Video concepts
+   - Interactive content
+   - Story formats
+
+5. **Engagement Strategies**
+   - Community building tactics
+   - User interaction methods
+   - Viral potential elements
+
+6. **Performance Metrics**
+   - KPI definitions
+   - Tracking methods
+   - Success benchmarks
+
+7. **Content Production Workflow**
+   - Creation process
+   - Approval workflow
+   - Publishing schedule
+
+Sertakan 10 ide konten spesifik yang siap dieksekusi.`,
     variables: [
-      { name: 'genre', type: 'select', label: 'Genre', options: ['Fantasy', 'Sci-Fi', 'Mystery', 'Romance', 'Thriller', 'Drama'], required: true },
-      { name: 'setting', type: 'text', label: 'Setting', placeholder: 'Waktu dan tempat cerita', required: true },
-      { name: 'main_character', type: 'text', label: 'Karakter Utama', placeholder: 'Deskripsi karakter utama', required: true },
-      { name: 'conflict', type: 'text', label: 'Konflik', placeholder: 'Konflik utama dalam cerita', required: true },
-      { name: 'length', type: 'select', label: 'Panjang', options: ['Pendek (500 kata)', 'Sedang (1000 kata)', 'Panjang (2000+ kata)'], required: true }
+      { name: 'brand', type: 'text', label: 'Brand/Produk', placeholder: 'Nama brand atau produk', required: true },
+      { name: 'audience', type: 'text', label: 'Target Audience', placeholder: 'Deskripsi target audience', required: true },
+      { name: 'platform', type: 'select', label: 'Platform Utama', options: ['Instagram', 'TikTok', 'LinkedIn', 'YouTube', 'Twitter/X', 'Multi-platform'], required: true },
+      { name: 'objective', type: 'select', label: 'Tujuan Utama', options: ['Brand Awareness', 'Lead Generation', 'Sales Conversion', 'Community Building', 'Thought Leadership'], required: true },
+      { name: 'budget', type: 'select', label: 'Budget Range', options: ['< $1K/month', '$1K-5K/month', '$5K-20K/month', '$20K+/month'], required: true },
+      { name: 'timeline', type: 'select', label: 'Timeline', options: ['1 bulan', '3 bulan', '6 bulan', '1 tahun'], required: true }
     ],
     isPublic: true,
-    createdBy: 'system',
-    usageCount: 298
+    createdBy: 'velian-system',
+    usageCount: 456
   },
   {
     id: uuidv4(),
-    title: 'Lesson Plan',
-    description: 'Template untuk membuat rencana pembelajaran',
+    title: 'Learning Path Designer',
+    description: 'Desain jalur pembelajaran yang personal dan efektif',
     category: 'education',
-    prompt: `Buat rencana pembelajaran dengan detail berikut:
+    prompt: `Sebagai Velian AI Education Expert, buat learning path komprehensif untuk:
 
-Mata Pelajaran: {{subject}}
-Tingkat: {{grade_level}}
-Durasi: {{duration}}
-Topik: {{topic}}
-Tujuan Pembelajaran: {{objectives}}
+**Subjek/Skill:** {{subject}}
+**Current Level:** {{current_level}}
+**Target Level:** {{target_level}}
+**Learning Style:** {{learning_style}}
+**Available Time:** {{time_commitment}}
+**Deadline:** {{deadline}}
 
-Struktur:
-1. **Pembukaan** ({{opening_time}} menit)
-2. **Kegiatan Inti** ({{main_time}} menit)
-3. **Penutup** ({{closing_time}} menit)
+**Personalized Learning Path:**
 
-Sertakan metode pembelajaran, media yang digunakan, dan evaluasi.`,
+1. **Skill Assessment & Gap Analysis**
+   - Current competency mapping
+   - Required skills identification
+   - Learning gap analysis
+
+2. **Learning Objectives (SMART Goals)**
+   - Specific milestones
+   - Measurable outcomes
+   - Achievable targets
+   - Relevant applications
+   - Time-bound checkpoints
+
+3. **Structured Curriculum (Phase-by-Phase)**
+   - Foundation Phase (Weeks 1-2)
+   - Intermediate Phase (Weeks 3-6)
+   - Advanced Phase (Weeks 7-10)
+   - Mastery Phase (Weeks 11-12)
+
+4. **Learning Resources & Materials**
+   - Primary resources (books, courses)
+   - Supplementary materials
+   - Practice platforms
+   - Community resources
+
+5. **Hands-on Projects & Exercises**
+   - Progressive difficulty projects
+   - Real-world applications
+   - Portfolio building
+
+6. **Assessment & Feedback Methods**
+   - Self-assessment tools
+   - Peer review opportunities
+   - Expert feedback channels
+
+7. **Learning Schedule & Time Management**
+   - Daily study plan
+   - Weekly goals
+   - Progress tracking system
+
+8. **Motivation & Accountability**
+   - Reward systems
+   - Progress celebrations
+   - Support network building
+
+Sertakan checklist harian dan weekly review template.`,
     variables: [
-      { name: 'subject', type: 'text', label: 'Mata Pelajaran', placeholder: 'Nama mata pelajaran', required: true },
-      { name: 'grade_level', type: 'text', label: 'Tingkat', placeholder: 'Kelas/tingkat', required: true },
-      { name: 'duration', type: 'number', label: 'Durasi (menit)', placeholder: '90', required: true },
-      { name: 'topic', type: 'text', label: 'Topik', placeholder: 'Topik pembelajaran', required: true },
-      { name: 'objectives', type: 'textarea', label: 'Tujuan Pembelajaran', placeholder: 'Tujuan yang ingin dicapai', required: true },
-      { name: 'opening_time', type: 'number', label: 'Waktu Pembukaan', placeholder: '10', required: true },
-      { name: 'main_time', type: 'number', label: 'Waktu Kegiatan Inti', placeholder: '70', required: true },
-      { name: 'closing_time', type: 'number', label: 'Waktu Penutup', placeholder: '10', required: true }
+      { name: 'subject', type: 'text', label: 'Subjek/Skill', placeholder: 'Apa yang ingin dipelajari', required: true },
+      { name: 'current_level', type: 'select', label: 'Level Saat Ini', options: ['Complete Beginner', 'Some Knowledge', 'Intermediate', 'Advanced'], required: true },
+      { name: 'target_level', type: 'select', label: 'Target Level', options: ['Basic Understanding', 'Intermediate Proficiency', 'Advanced Expertise', 'Professional Mastery'], required: true },
+      { name: 'learning_style', type: 'select', label: 'Gaya Belajar', options: ['Visual', 'Auditory', 'Kinesthetic', 'Reading/Writing', 'Mixed'], required: true },
+      { name: 'time_commitment', type: 'select', label: 'Waktu Tersedia', options: ['1-2 jam/hari', '3-4 jam/hari', '5-6 jam/hari', 'Full-time'], required: true },
+      { name: 'deadline', type: 'select', label: 'Target Waktu', options: ['1 bulan', '3 bulan', '6 bulan', '1 tahun'], required: true }
     ],
     isPublic: true,
-    createdBy: 'system',
-    usageCount: 134
+    createdBy: 'velian-system',
+    usageCount: 378
   }
 ];
 
 export const sampleSessions: ChatSession[] = [
   {
     id: uuidv4(),
-    title: 'Diskusi tentang AI dan Masa Depan',
+    title: 'Strategi AI untuk Bisnis Modern',
     messages: [
       {
         id: uuidv4(),
-        content: 'Bagaimana AI akan mengubah dunia kerja di masa depan?',
+        content: 'Bagaimana AI dapat mengoptimalkan operasional bisnis di era digital?',
         role: 'user',
         timestamp: new Date(Date.now() - 3600000),
       },
       {
         id: uuidv4(),
-        content: 'AI akan mengubah dunia kerja secara signifikan dalam beberapa cara:\n\n1. **Otomatisasi Tugas Rutin**: AI akan mengambil alih tugas-tugas repetitif dan rutin, memungkinkan manusia fokus pada pekerjaan yang lebih kreatif dan strategis.\n\n2. **Augmentasi Kemampuan Manusia**: AI akan menjadi partner yang membantu meningkatkan produktivitas dan kemampuan analisis manusia.\n\n3. **Penciptaan Pekerjaan Baru**: Meskipun beberapa pekerjaan akan hilang, AI juga akan menciptakan kategori pekerjaan baru seperti AI trainer, data scientist, dan ethics officer.\n\n4. **Transformasi Industri**: Sektor seperti healthcare, finance, dan manufacturing akan mengalami transformasi besar-besaran.\n\nKunci sukses adalah adaptasi dan pembelajaran berkelanjutan.',
+        content: `# Optimalisasi Operasional Bisnis dengan AI
+
+Sebagai Velian AI, saya akan menjelaskan bagaimana AI dapat mentransformasi operasional bisnis modern:
+
+## 🎯 **Otomatisasi Proses Bisnis**
+- **Customer Service**: Chatbot AI untuk respons 24/7 dengan tingkat akurasi 95%
+- **Data Processing**: Automasi analisis data real-time untuk decision making
+- **Inventory Management**: Prediksi demand dan optimasi stok otomatis
+
+## 📊 **Predictive Analytics**
+- **Sales Forecasting**: Prediksi penjualan dengan akurasi hingga 90%
+- **Risk Assessment**: Identifikasi risiko bisnis sebelum terjadi
+- **Market Trend Analysis**: Analisis tren pasar untuk strategic planning
+
+## 🔧 **Operational Efficiency**
+- **Resource Allocation**: Optimasi penggunaan sumber daya berdasarkan data
+- **Quality Control**: Deteksi defect otomatis dalam produksi
+- **Supply Chain**: Optimasi rantai pasok dengan AI logistics
+
+## 💡 **Personalization at Scale**
+- **Customer Experience**: Personalisasi produk/layanan untuk setiap customer
+- **Marketing Campaigns**: Targeting yang lebih presisi dan efektif
+- **Product Recommendations**: Sistem rekomendasi yang meningkatkan conversion
+
+## 🚀 **Implementation Roadmap**
+1. **Assessment Phase** (Bulan 1-2): Audit proses existing
+2. **Pilot Project** (Bulan 3-4): Implementasi di satu area
+3. **Scale Up** (Bulan 5-8): Ekspansi ke area lain
+4. **Optimization** (Ongoing): Continuous improvement
+
+**ROI yang dapat dicapai**: 25-40% peningkatan efisiensi dalam 12 bulan pertama.`,
         role: 'assistant',
         timestamp: new Date(Date.now() - 3500000),
-        tokens: 156,
-        model: 'gemini-2.0-flash'
+        tokens: 298,
+        model: 'velian-ai-pro'
       }
     ],
     createdAt: new Date(Date.now() - 3600000),
     updatedAt: new Date(Date.now() - 3500000),
-    tags: ['AI', 'Future', 'Work'],
-    model: 'gemini-2.0-flash',
-    settings: defaultSettings
-  },
-  {
-    id: uuidv4(),
-    title: 'Belajar React Hooks',
-    messages: [
-      {
-        id: uuidv4(),
-        content: 'Bisakah kamu jelaskan useState dan useEffect di React?',
-        role: 'user',
-        timestamp: new Date(Date.now() - 7200000),
-      },
-      {
-        id: uuidv4(),
-        content: '## useState Hook\n\n`useState` adalah hook untuk mengelola state dalam functional component:\n\n```javascript\nimport React, { useState } from \'react\';\n\nfunction Counter() {\n  const [count, setCount] = useState(0);\n  \n  return (\n    <div>\n      <p>Count: {count}</p>\n      <button onClick={() => setCount(count + 1)}>\n        Increment\n      </button>\n    </div>\n  );\n}\n```\n\n## useEffect Hook\n\n`useEffect` untuk side effects seperti API calls, subscriptions:\n\n```javascript\nimport React, { useState, useEffect } from \'react\';\n\nfunction UserProfile({ userId }) {\n  const [user, setUser] = useState(null);\n  \n  useEffect(() => {\n    fetchUser(userId).then(setUser);\n  }, [userId]); // Dependency array\n  \n  return user ? <div>{user.name}</div> : <div>Loading...</div>;\n}\n```\n\n**Key Points:**\n- useState mengembalikan array [value, setter]\n- useEffect berjalan setelah render\n- Dependency array mengontrol kapan effect berjalan',
-        role: 'assistant',
-        timestamp: new Date(Date.now() - 7100000),
-        tokens: 234,
-        model: 'gemini-2.0-flash',
-        isBookmarked: true
-      }
-    ],
-    createdAt: new Date(Date.now() - 7200000),
-    updatedAt: new Date(Date.now() - 7100000),
-    tags: ['React', 'JavaScript', 'Programming'],
-    model: 'gemini-2.0-flash',
+    tags: ['AI', 'Business', 'Strategy', 'Digital Transformation'],
+    model: 'velian-ai-pro',
     settings: defaultSettings
   }
 ];

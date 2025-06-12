@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Paperclip, Mic, Square, Settings, MoreVertical, Sparkles } from 'lucide-react';
+import { Send, Paperclip, Mic, Square, Settings, MoreVertical, Sparkles, Shield, Clock, Zap } from 'lucide-react';
 import { Message } from '../types';
 import MessageBubble from './MessageBubble';
 import TypingIndicator from './TypingIndicator';
 import VoiceRecorder from './VoiceRecorder';
 import AttachmentUpload from './AttachmentUpload';
+import { aiService } from '../services/aiService';
 
 interface ChatInterfaceProps {
   messages: Message[];
@@ -34,6 +35,7 @@ export default function ChatInterface({
   const [isRecording, setIsRecording] = useState(false);
   const [showAttachments, setShowAttachments] = useState(false);
   const [attachments, setAttachments] = useState<any[]>([]);
+  const [rateLimitStatus, setRateLimitStatus] = useState({ remaining: 5, resetTime: 0 });
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -45,9 +47,21 @@ export default function ChatInterface({
     scrollToBottom();
   }, [messages]);
 
+  // Update rate limit status
+  useEffect(() => {
+    const updateRateLimit = () => {
+      const status = aiService.getRateLimitStatus();
+      setRateLimitStatus(status);
+    };
+
+    updateRateLimit();
+    const interval = setInterval(updateRateLimit, 1000);
+    return () => clearInterval(interval);
+  }, [messages]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (input.trim() || attachments.length > 0) {
+    if ((input.trim() || attachments.length > 0) && rateLimitStatus.remaining > 0) {
       onSendMessage(input.trim(), attachments);
       setInput('');
       setAttachments([]);
@@ -75,28 +89,33 @@ export default function ChatInterface({
   }, [input]);
 
   const suggestedPrompts = [
-    "Jelaskan konsep machine learning dengan sederhana",
-    "Buatkan rencana belajar programming untuk pemula",
-    "Analisis tren teknologi terbaru tahun 2024",
-    "Tips produktivitas untuk remote work"
+    "Analisis tren teknologi AI terbaru dan dampaknya pada industri",
+    "Buatkan strategi marketing digital untuk startup teknologi",
+    "Jelaskan konsep machine learning dengan contoh praktis",
+    "Rancang sistem pembelajaran online yang efektif"
   ];
 
+  const formatResetTime = (milliseconds: number) => {
+    const seconds = Math.ceil(milliseconds / 1000);
+    return `${seconds}s`;
+  };
+
   return (
-    <div className="flex flex-col h-full bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+    <div className="flex flex-col h-full bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       {/* Chat Header */}
-      <div className="flex items-center justify-between p-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 shadow-sm">
+      <div className="flex items-center justify-between p-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 shadow-sm">
         <div className="flex items-center space-x-3">
           <div className="relative">
-            <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-white" />
+            <div className="w-12 h-12 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+              <Sparkles className="w-6 h-6 text-white" />
             </div>
-            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white dark:border-gray-800"></div>
+            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white dark:border-gray-800 animate-pulse"></div>
           </div>
           <div>
-            <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
-              AI Assistant
+            <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              Velian AI
             </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center space-x-2">
               {isLoading ? (
                 <span className="flex items-center space-x-1">
                   <motion.div
@@ -104,16 +123,32 @@ export default function ChatInterface({
                     animate={{ scale: [1, 1.2, 1] }}
                     transition={{ duration: 1, repeat: Infinity }}
                   />
-                  <span>Sedang mengetik...</span>
+                  <span>Sedang berpikir...</span>
                 </span>
               ) : (
-                'Online • Powered by Gemini 2.0'
+                <>
+                  <Shield className="w-3 h-3 text-green-500" />
+                  <span>Online • AI Cerdas & Aman</span>
+                </>
               )}
             </p>
           </div>
         </div>
         
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-3">
+          {/* Rate Limit Indicator */}
+          <div className="flex items-center space-x-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-700 rounded-lg">
+            <Clock className="w-4 h-4 text-gray-500" />
+            <span className="text-sm text-gray-600 dark:text-gray-300">
+              {rateLimitStatus.remaining}/5
+            </span>
+            {rateLimitStatus.remaining === 0 && (
+              <span className="text-xs text-red-500">
+                Reset: {formatResetTime(rateLimitStatus.resetTime)}
+              </span>
+            )}
+          </div>
+          
           <button
             onClick={onClearChat}
             className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
@@ -131,25 +166,62 @@ export default function ChatInterface({
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center">
-            <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mb-6">
-              <Sparkles className="w-10 h-10 text-white" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-              Selamat datang di AI Chat Platform
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md">
-              Mulai percakapan dengan AI assistant yang canggih. Tanyakan apa saja yang ingin Anda ketahui!
-            </p>
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.5 }}
+              className="w-24 h-24 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 rounded-2xl flex items-center justify-center mb-6 shadow-2xl"
+            >
+              <Sparkles className="w-12 h-12 text-white" />
+            </motion.div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-2xl">
+            <motion.h2
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3"
+            >
+              Selamat datang di Velian AI
+            </motion.h2>
+            
+            <motion.p
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="text-gray-600 dark:text-gray-400 mb-2 max-w-md"
+            >
+              AI Assistant yang cerdas, aman, dan membantu untuk semua kebutuhan Anda
+            </motion.p>
+            
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              className="flex items-center space-x-4 mb-8 text-sm text-gray-500 dark:text-gray-400"
+            >
+              <div className="flex items-center space-x-1">
+                <Zap className="w-4 h-4 text-yellow-500" />
+                <span>Super Cerdas</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <Shield className="w-4 h-4 text-green-500" />
+                <span>Aman & Etis</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <Clock className="w-4 h-4 text-blue-500" />
+                <span>5 pesan/menit</span>
+              </div>
+            </motion.div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-3xl">
               {suggestedPrompts.map((prompt, index) => (
                 <motion.button
                   key={index}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
+                  transition={{ delay: 0.5 + index * 0.1 }}
                   onClick={() => setInput(prompt)}
-                  className="p-4 text-left bg-white dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 hover:shadow-md transition-all duration-200 group"
+                  className="p-4 text-left bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm rounded-xl border border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 hover:shadow-lg transition-all duration-200 group"
                 >
                   <p className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400">
                     {prompt}
@@ -177,6 +249,22 @@ export default function ChatInterface({
         <div ref={messagesEndRef} />
       </div>
 
+      {/* Rate Limit Warning */}
+      {rateLimitStatus.remaining <= 1 && rateLimitStatus.remaining > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mx-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg"
+        >
+          <div className="flex items-center space-x-2 text-yellow-800 dark:text-yellow-200">
+            <Clock className="w-4 h-4" />
+            <span className="text-sm">
+              Peringatan: Anda memiliki {rateLimitStatus.remaining} pesan tersisa dalam menit ini
+            </span>
+          </div>
+        </motion.div>
+      )}
+
       {/* Attachment Preview */}
       <AnimatePresence>
         {attachments.length > 0 && (
@@ -184,20 +272,20 @@ export default function ChatInterface({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="px-4 py-2 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700"
+            className="px-4 py-2 bg-gray-50/80 dark:bg-gray-800/80 backdrop-blur-sm border-t border-gray-200 dark:border-gray-700"
           >
             <div className="flex flex-wrap gap-2">
               {attachments.map((attachment, index) => (
                 <div
                   key={index}
-                  className="flex items-center space-x-2 bg-white dark:bg-gray-700 rounded-lg p-2 border border-gray-200 dark:border-gray-600"
+                  className="flex items-center space-x-2 bg-white dark:bg-gray-700 rounded-lg p-2 border border-gray-200 dark:border-gray-600 shadow-sm"
                 >
                   <span className="text-sm text-gray-600 dark:text-gray-300">
                     {attachment.name}
                   </span>
                   <button
                     onClick={() => setAttachments(prev => prev.filter((_, i) => i !== index))}
-                    className="text-red-500 hover:text-red-700"
+                    className="text-red-500 hover:text-red-700 text-lg leading-none"
                   >
                     ×
                   </button>
@@ -209,7 +297,7 @@ export default function ChatInterface({
       </AnimatePresence>
 
       {/* Input Area */}
-      <div className="p-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-t border-gray-200 dark:border-gray-700">
+      <div className="p-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md border-t border-gray-200 dark:border-gray-700">
         <form onSubmit={handleSubmit} className="flex items-end space-x-3">
           <div className="flex-1 relative">
             <textarea
@@ -217,8 +305,13 @@ export default function ChatInterface({
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Ketik pesan Anda di sini..."
-              className="w-full resize-none rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 px-4 py-3 pr-12 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
+              placeholder={
+                rateLimitStatus.remaining === 0 
+                  ? `Rate limit tercapai. Reset dalam ${formatResetTime(rateLimitStatus.resetTime)}`
+                  : "Tanyakan apa saja kepada Velian AI..."
+              }
+              disabled={rateLimitStatus.remaining === 0}
+              className="w-full resize-none rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50/80 dark:bg-gray-700/80 backdrop-blur-sm px-4 py-3 pr-12 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               rows={1}
               style={{ minHeight: '48px', maxHeight: '120px' }}
             />
@@ -227,7 +320,8 @@ export default function ChatInterface({
               <button
                 type="button"
                 onClick={() => setShowAttachments(!showAttachments)}
-                className="p-1.5 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors"
+                disabled={rateLimitStatus.remaining === 0}
+                className="p-1.5 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors disabled:opacity-50"
               >
                 <Paperclip className="w-4 h-4" />
               </button>
@@ -256,8 +350,8 @@ export default function ChatInterface({
           ) : (
             <button
               type="submit"
-              disabled={!input.trim() && attachments.length === 0}
-              className="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-xl transition-all duration-200 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95 shadow-lg"
+              disabled={(!input.trim() && attachments.length === 0) || rateLimitStatus.remaining === 0}
+              className="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-xl transition-all duration-200 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95 shadow-lg disabled:transform-none"
             >
               <Send className="w-5 h-5" />
             </button>
