@@ -11,8 +11,25 @@ import { ChatSession, Template } from './types';
 import { defaultSettings, availableModels, sampleTemplates, sampleSessions } from './data/mockData';
 import { v4 as uuidv4 } from 'uuid';
 
+// Helper function to convert date strings back to Date objects
+const parseChatSessionDates = (sessions: any[]): ChatSession[] => {
+  return sessions.map(session => ({
+    ...session,
+    createdAt: new Date(session.createdAt),
+    updatedAt: new Date(session.updatedAt),
+    messages: session.messages?.map((message: any) => ({
+      ...message,
+      timestamp: new Date(message.timestamp)
+    })) || []
+  }));
+};
+
 function App() {
-  const [sessions, setSessions] = useLocalStorage<ChatSession[]>('chat-sessions', sampleSessions);
+  const [sessions, setSessions] = useLocalStorage<ChatSession[]>(
+    'chat-sessions', 
+    sampleSessions,
+    parseChatSessionDates
+  );
   const [currentSessionId, setCurrentSessionId] = useLocalStorage<string | null>('current-session', null);
   const [settings, setSettings] = useLocalStorage('chat-settings', defaultSettings);
   const [templates] = useLocalStorage<Template[]>('chat-templates', sampleTemplates);
